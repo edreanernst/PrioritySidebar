@@ -34,14 +34,28 @@ visible all the time, and reordering it takes one drag.
 
 ## Requirements
 
-- Windows 10 or Windows 11
-- [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (included if you install
-  the .NET 10 SDK)
+- Windows 10 or Windows 11 (64-bit)
 - A Trello account
 
 ## Install
 
-There are no prebuilt downloads yet, so build it from source:
+### Download (easiest)
+
+Go to the [latest release](https://github.com/edreanernst/PrioritySidebar/releases/latest) and download
+one of the two files:
+
+- **`PrioritySidebar-<version>-win-x64-standalone.exe`** (about 60 MB): runs as is, nothing else to
+  install. Pick this one if you're not sure.
+- **`PrioritySidebar-<version>-win-x64.exe`** (under 1 MB): needs the
+  [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) installed first.
+
+Put the file in a folder where it can stay (for example `Documents\PrioritySidebar`) and run it. If you
+turn on "Start when Windows starts", Windows starts it from that spot, so move it before setting up.
+
+The app isn't code-signed yet, so the first time you run it Windows may show "Windows protected your PC".
+Choose **More info**, then **Run anyway**.
+
+### Build from source
 
 1. Install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
 2. Clone the repository and build a single-file app:
@@ -52,7 +66,7 @@ There are no prebuilt downloads yet, so build it from source:
    dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
    ```
 
-3. Run `publish\PrioritySidebar.exe`. You can move the exe anywhere you like before you set it up.
+3. Run `publish\PrioritySidebar.exe`.
 
 ## Connect it to Trello
 
@@ -132,6 +146,9 @@ cd PrioritySidebar
 dotnet build
 dotnet run
 ```
+
+Every push and pull request to `main` is built by GitHub Actions (`.github/workflows/build.yml`).
+Pushing a version tag such as `v0.2.0` also publishes a release with both downloads attached.
 
 ## License
 

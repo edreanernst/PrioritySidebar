@@ -6,7 +6,9 @@ for the public, so keep it current when behaviour changes.
 
 ## Checks
 
-- `dotnet build` must pass with 0 warnings. There are no automated tests yet.
+- `dotnet build -c Release -warnaserror` must pass (CI runs the same). There are no automated tests yet.
+- Releases: pushing a tag `vX.Y.Z` makes CI publish a GitHub release with a small and a standalone exe.
+  Only tag when the owner asks.
 - Docking can only be checked by running the app: launch it, confirm the sidebar sits at the right edge
   and maximized windows stop beside it, then close it from the header's right-click menu and confirm the
   full screen width comes back.
