@@ -1,57 +1,142 @@
 # Priority Sidebar
 
-A slim, always-visible sidebar on the right edge of a Windows display that shows one Trello list as a
-ranked column of cards. Windows treats it like the taskbar: maximized and snapped windows stop at its
-edge instead of covering it. Reorder by dragging (or with the up/down buttons on hover); changes go
-straight to Trello, and changes made in the Trello app on your phone show up within the polling interval.
+**Your Trello priority list, always on screen.** Priority Sidebar is a slim sidebar for Windows. It
+docks on the right edge of a display and shows one Trello list as a ranked column of cards. It works
+like a sticky-note board on the wall next to your desk, but digital, and you can update it from your
+phone.
+
+It docks the way the Windows taskbar does. Maximized and snapped windows stop at its edge instead of
+covering it, so your priorities are always in view while you work.
+
+## Why
+
+When priorities shift every few days, a task list in a browser tab gets out of sight and out of mind.
+You end up busy with something that slipped down the list last week. Priority Sidebar keeps the list
+visible all the time, and reordering it takes one drag.
+
+## Features
+
+- **Always visible.** It reserves a strip on the right edge of the display you choose, so other windows
+  sit beside it.
+- **Drag to reorder.** Drag a card up or down to change its rank. The new order is saved to Trello
+  straight away.
+- **Works with your phone.** Reorder or add cards in the Trello app on your phone, and the sidebar picks
+  up the change within 30 seconds. Cards that moved are briefly outlined.
+- **Quick actions on hover.** Move up, move down, open in Trello, and done.
+- **Done means done.** Marking a card done adds a green "Done" label and archives it, so you can still
+  find everything you finished in Trello's archive. Undo puts it back where it was.
+- **Quick add.** Type in the box at the bottom and press Enter.
+- **Labels shown.** Each card shows its Trello labels, so you can tell projects apart in one list.
+- **Offline friendly.** Without a connection it shows the last list it loaded and pauses changes until
+  Trello can be reached again.
+- **Stays out of the way.** It steps behind full-screen apps such as videos and presentations, and it
+  doesn't appear in Alt+Tab or the taskbar.
+
+## Requirements
+
+- Windows 10 or Windows 11
+- [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (included if you install
+  the .NET 10 SDK)
+- A Trello account
+
+## Install
+
+There are no prebuilt downloads yet, so build it from source:
+
+1. Install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
+2. Clone the repository and build a single-file app:
+
+   ```bash
+   git clone https://github.com/edreanernst/PrioritySidebar.git
+   cd PrioritySidebar
+   dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
+   ```
+
+3. Run `publish\PrioritySidebar.exe`. You can move the exe anywhere you like before you set it up.
+
+## Connect it to Trello
+
+Priority Sidebar talks to Trello with your own API key and token. You create them once, and they never
+leave your computer.
+
+1. Open the [Trello Power-Up admin page](https://trello.com/power-ups/admin) and choose **New**. Give it
+   a name (for example "Priority Sidebar") and pick your workspace. The iframe connector URL can stay
+   empty.
+2. Open the new app and go to **Authorization > Trello Auth**. Copy the **API key** (generate one if
+   there isn't one yet). You can ignore the OAuth 2.0 page.
+3. Start Priority Sidebar. The settings window opens on first run. Paste the API key.
+4. Press **Get a token**. Trello opens in your browser and asks you to allow access. Approve it, then copy
+   the token Trello shows and paste it into settings.
+5. Press **Connect**, choose the board and list to show, and press **Save**.
+
+In the same settings window you can pick the display, the sidebar width and how often to check Trello,
+and set it to start when Windows starts.
 
 ## Using it
 
-- **Drag a card** up or down to change its rank. Hover a card for move up, move down, open in Trello and done.
-- **Done** adds a green "Done" label (created on the board the first time) and archives the card. Undo
-  brings it back to the same place and removes the label.
-- **Add a card** with the box at the bottom; it goes to the bottom of the list.
-- **Refresh arrow** checks Trello now. The app also checks every 30 seconds (configurable). Cards that
-  were moved or added elsewhere are briefly outlined.
-- **Right-click the header** for settings, check now, and closing the sidebar.
-- **Offline**, it shows the last list it loaded and pauses changes until Trello can be reached again.
+| To do this | Do this |
+| --- | --- |
+| Change a card's rank | Drag it up or down, or hover and use the arrows |
+| Mark a card done | Hover and press the tick, then **Undo** if you change your mind |
+| Open a card in Trello | Hover and press the open button |
+| Add a card | Type in the box at the bottom and press Enter |
+| Check Trello right now | Press the refresh arrow at the top |
+| Change settings | Press the settings button at the top |
+| Close the sidebar | Right-click the header and choose **Close Priority Sidebar** |
 
-## First-time setup
+Please close it from the header menu rather than ending it in Task Manager. A forced stop leaves the
+reserved strip in place until the next time the sidebar starts.
 
-1. Open <https://trello.com/power-ups/admin>, choose **New**, give it a name (for example "Priority
-   Sidebar") and your workspace. The iframe connector URL can stay empty. Create it.
-2. Open it, go to **API key**, choose **Generate a new API key** and copy the key.
-3. Start the sidebar. In settings, paste the key, press **Get a token**, approve access in Trello and
-   paste the token it shows. Press **Connect**, pick the board and list, and **Save**.
+## Privacy
 
-Settings live in `%APPDATA%\PrioritySidebar\settings.json`; the token is encrypted for your Windows user
-account. Errors are logged to `errors.log` in the same folder.
+- The sidebar only talks to Trello (`api.trello.com`). There is no server, account or tracking of its
+  own.
+- Settings are stored in `%APPDATA%\PrioritySidebar\settings.json`. Your Trello token is encrypted with
+  Windows data protection, so only your Windows user account can read it.
+- The last loaded list is cached in the same folder so it can be shown while offline.
+- Errors are written to `errors.log` in that folder, which is useful when reporting a bug.
 
-## Building
+## How it works
 
-Requires the .NET 10 SDK.
+- **Docking:** `AppBar.cs` registers the window as a Windows app bar (`SHAppBarMessage`), the same
+  mechanism the taskbar uses. It is sized in real pixels for each display's scaling and re-docks when
+  the display layout or scaling changes. On startup it registers and removes once, which makes Windows
+  forget a strip left behind by a run that crashed.
+- **Trello:** `TrelloClient.cs` holds the few Trello REST calls. Trello orders cards by a hidden
+  position number, so a moved card gets the midpoint between its new neighbours
+  (`Ranking.PosBetween`), or `top` / `bottom` at either end.
+- **Sidebar:** `MainWindow` shows the list, handles drag and drop, and saves changes to Trello one at a
+  time. If a save fails, the list is reloaded from Trello so it always shows the truth.
+- **Settings:** `SettingsWindow` and `Storage.cs` handle the connection, list choice, display, width,
+  polling interval and starting with Windows.
+
+## Contributing
+
+Contributions are welcome, from bug reports to pull requests.
+
+- **Bugs and ideas:** open an [issue](https://github.com/edreanernst/PrioritySidebar/issues). For bugs,
+  include your Windows version, your display setup (how many displays and their scaling), and the
+  relevant lines from `errors.log`.
+- **Pull requests:** keep them focused on one change and describe how you tested it.
+  - `dotnet build` must pass with no warnings.
+  - There are no automated tests yet, so check docking by hand: start the sidebar, make sure maximized
+    windows stop beside it, then close it from the header menu and make sure the full screen width
+    comes back. If you have more than one display or mixed scaling, test on those too.
+  - Keep wording in the app plain and short.
+
+To work on it:
 
 ```bash
+git clone https://github.com/edreanernst/PrioritySidebar.git
+cd PrioritySidebar
 dotnet build
 dotnet run
 ```
 
-A single-file build to run day to day (needs the .NET 10 desktop runtime, which the SDK includes):
+## License
 
-```bash
-dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
-```
+Priority Sidebar is free software, licensed under the
+[GNU General Public License v3.0](LICENSE). You may use, study, share and change it. If you distribute a
+modified version, it must also be under the GPLv3, with its source code available.
 
-Run `publish\PrioritySidebar.exe`. "Start when Windows starts" registers whichever exe was running when
-settings were saved, so save settings once from the published exe.
-
-## How it works
-
-- `AppBar.cs` registers the window as a Windows app bar (`SHAppBarMessage`) on the right edge of the chosen
-  display, sized in physical pixels for that display's scaling. It re-docks when the display layout or
-  scaling changes and steps behind full-screen apps. On startup it registers and removes once first,
-  which makes Windows drop a strip left behind by a run that crashed or was force-stopped.
-- `TrelloClient.cs` holds the few Trello REST calls. Card order is Trello's `pos` number; a moved card
-  gets the midpoint of its new neighbours (`Ranking.PosBetween`), or `top` / `bottom` at the ends.
-- `MainWindow` shows the list, handles drag and drop, and saves changes one at a time. If a save fails
-  the list is reloaded from Trello.
+Trello is a trademark of Atlassian. This project is not affiliated with or endorsed by Atlassian.

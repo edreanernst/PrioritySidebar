@@ -1,7 +1,8 @@
 # Priority Sidebar
 
-Personal WPF (.NET 10) app: a Windows app bar on the right edge of a display that shows one Trello list
-as a ranked, drag-to-reorder column. See README.md for behaviour and structure.
+Open-source (GPLv3) WPF (.NET 10) app: a Windows app bar on the right edge of a display that shows one
+Trello list as a ranked, drag-to-reorder column. See README.md for behaviour and structure; it is written
+for the public, so keep it current when behaviour changes.
 
 ## Checks
 
