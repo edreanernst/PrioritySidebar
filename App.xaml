@@ -10,6 +10,9 @@
     <SolidColorBrush x:Key="CardBorderBrush" Color="#303338"/>
     <SolidColorBrush x:Key="TextBrush" Color="#ECECEE"/>
     <SolidColorBrush x:Key="SubBrush" Color="#A6A9B0"/>
+    <SolidColorBrush x:Key="DescBrush" Color="#D2D3D7"/>
+    <SolidColorBrush x:Key="RuleBrush" Color="#3A3D43"/>
+    <SolidColorBrush x:Key="OkBrush" Color="#7CC48A"/>
     <SolidColorBrush x:Key="InputBrush" Color="#222428"/>
     <SolidColorBrush x:Key="AccentBrush" Color="#E8B04B"/>
     <SolidColorBrush x:Key="OnAccentBrush" Color="#17181B"/>
@@ -24,6 +27,8 @@
     <Geometry x:Key="IconRefresh">M20,11 A8,8 0 1 0 17.7,16.7 M20,4 V11 H13</Geometry>
     <Geometry x:Key="IconAdd">M12,5 V19 M5,12 H19</Geometry>
     <Geometry x:Key="IconSettings">M4,7 H11 M15,7 H20 M13,5 V9 M4,17 H7 M11,17 H20 M9,15 V19</Geometry>
+    <Geometry x:Key="IconDescription">M4,6 H20 M4,10.5 H20 M4,15 H20 M4,19.5 H13</Geometry>
+    <Geometry x:Key="IconChecklist">M6.5,3.5 H17.5 A3,3 0 0 1 20.5,6.5 V17.5 A3,3 0 0 1 17.5,20.5 H6.5 A3,3 0 0 1 3.5,17.5 V6.5 A3,3 0 0 1 6.5,3.5 Z M8,12.5 L11,15.5 L16,9.5</Geometry>
 
     <Style x:Key="IconButton" TargetType="Button">
       <Setter Property="Width" Value="28"/>

@@ -56,11 +56,125 @@
       </Setter>
     </Style>
 
+    <!-- Small icon button on a card, with an optional count beside the icon. -->
+    <Style x:Key="ChipButton" TargetType="Button">
+      <Setter Property="Height" Value="24"/>
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="Foreground" Value="{StaticResource SubBrush}"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="Bg" Background="{TemplateBinding Background}" CornerRadius="6" Padding="4,0">
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Viewbox Width="14" Height="14">
+                  <Canvas Width="24" Height="24">
+                    <Path Data="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                          Stroke="{TemplateBinding Foreground}" StrokeThickness="2.2"
+                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"/>
+                  </Canvas>
+                </Viewbox>
+                <ContentPresenter x:Name="Count" Margin="4,0,0,0" VerticalAlignment="Center"/>
+              </StackPanel>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="Content" Value="{x:Null}">
+                <Setter TargetName="Count" Property="Visibility" Value="Collapsed"/>
+              </Trigger>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Bg" Property="Background" Value="#38808080"/>
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="Bg" Property="Background" Value="#38808080"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="LinkButton" TargetType="Button">
+      <Setter Property="FontSize" Value="12"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="{StaticResource DescBrush}"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Background="Transparent" Padding="0,4">
+              <TextBlock x:Name="Text" Text="{TemplateBinding Content}" TextDecorations="Underline"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Text" Property="TextDecorations" Value="{x:Null}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="CheckRow" TargetType="CheckBox">
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="CheckBox">
+            <Grid Background="Transparent" Margin="0,4">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              <Border x:Name="Box" Width="16" Height="16" CornerRadius="4" BorderThickness="1.5"
+                      BorderBrush="{StaticResource SubBrush}" Background="Transparent" VerticalAlignment="Top" Margin="0,1,0,0">
+                <Path x:Name="Tick" Data="M2.5,6.5 L5.5,9.5 L10.5,3.5" Stroke="{StaticResource OnAccentBrush}" StrokeThickness="2"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round" Visibility="Collapsed"/>
+              </Border>
+              <ContentPresenter Grid.Column="1" Margin="8,0,0,0"/>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource TextBrush}"/>
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+              </Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="Box" Property="Background" Value="{StaticResource AccentBrush}"/>
+                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                <Setter TargetName="Tick" Property="Visibility" Value="Visible"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="ChecklistProgress" TargetType="ProgressBar">
+      <Setter Property="Height" Value="3"/>
+      <Setter Property="Minimum" Value="0"/>
+      <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+      <Setter Property="IsHitTestVisible" Value="False"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ProgressBar">
+            <Grid>
+              <Border x:Name="PART_Track" Background="{StaticResource RuleBrush}" CornerRadius="1.5"/>
+              <Border x:Name="PART_Indicator" Background="{TemplateBinding Foreground}" CornerRadius="1.5"
+                      HorizontalAlignment="Left"/>
+            </Grid>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
     <DataTemplate x:Key="CardTemplate" DataType="{x:Type local:CardViewModel}">
       <Grid Margin="0,3">
         <Border x:Name="Card" Background="{StaticResource CardBrush}" BorderBrush="{StaticResource CardBorderBrush}"
                 BorderThickness="1.5" CornerRadius="8" Padding="6,10,12,10" Cursor="SizeNS"
-                PreviewMouseLeftButtonDown="Card_PreviewMouseLeftButtonDown" PreviewMouseMove="Card_PreviewMouseMove">
+                PreviewMouseLeftButtonDown="Card_PreviewMouseLeftButtonDown" PreviewMouseMove="Card_PreviewMouseMove"
+                MouseLeftButtonUp="Card_MouseLeftButtonUp">
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="22"/>
@@ -70,22 +184,89 @@
                        TextAlignment="Right" Margin="0,1,0,0"/>
             <StackPanel Grid.Column="1" Margin="10,0,0,0">
               <TextBlock Text="{Binding Name}" TextWrapping="Wrap" LineHeight="19"/>
-              <ItemsControl ItemsSource="{Binding Labels}" Margin="0,5,0,0" Focusable="False"
-                            Visibility="{Binding HasLabels, Converter={StaticResource BoolToVisibility}}">
-                <ItemsControl.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <WrapPanel/>
-                  </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
-                      <Ellipse Width="8" Height="8" Fill="{Binding Dot}" VerticalAlignment="Center"/>
-                      <TextBlock Text="{Binding Name}" Margin="6,0,0,0" FontSize="12" Foreground="{StaticResource SubBrush}"/>
-                    </StackPanel>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
+
+              <!-- Labels, then buttons that show the description and the checklist. -->
+              <WrapPanel Margin="-4,2,0,-3" Visibility="{Binding ShowMeta, Converter={StaticResource BoolToVisibility}}">
+                <ItemsControl ItemsSource="{Binding Labels}" Margin="4,0,0,0" Focusable="False" VerticalAlignment="Center"
+                              Visibility="{Binding HasLabels, Converter={StaticResource BoolToVisibility}}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <WrapPanel/>
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <StackPanel Orientation="Horizontal" Margin="0,0,10,0">
+                        <Ellipse Width="8" Height="8" Fill="{Binding Dot}" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding Name}" Margin="6,0,0,0" FontSize="12" Foreground="{StaticResource SubBrush}"/>
+                      </StackPanel>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button x:Name="DescChip" Style="{StaticResource ChipButton}" Tag="{StaticResource IconDescription}"
+                        ToolTip="Description" AutomationProperties.Name="Description" Click="DescChip_Click"
+                        Visibility="{Binding HasDescription, Converter={StaticResource BoolToVisibility}}"/>
+                <Button x:Name="ListChip" Style="{StaticResource ChipButton}" Tag="{StaticResource IconChecklist}"
+                        Content="{Binding CheckCountText}" ToolTip="Checklist"
+                        AutomationProperties.Name="{Binding ChecklistLabel}" Click="ListChip_Click"
+                        Visibility="{Binding HasChecklist, Converter={StaticResource BoolToVisibility}}"/>
+              </WrapPanel>
+
+              <ProgressBar x:Name="Progress" Style="{StaticResource ChecklistProgress}" Margin="0,6,0,0"
+                           Maximum="{Binding CheckTotal}" Value="{Binding CheckDone, Mode=OneWay}"
+                           Visibility="{Binding HasChecklist, Converter={StaticResource BoolToVisibility}}"/>
+
+              <!-- Clicking these doesn't fold the card; see Card_MouseLeftButtonUp. -->
+              <StackPanel x:Name="Details">
+                <Border BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0" Margin="0,8,0,0" Padding="0,8,0,0"
+                        Visibility="{Binding ShowDescription, Converter={StaticResource BoolToVisibility}}">
+                  <StackPanel>
+                    <Border x:Name="DescClip" MaxHeight="144" ClipToBounds="True" SizeChanged="DescClip_SizeChanged">
+                      <TextBlock Text="{Binding Description}" TextWrapping="Wrap" FontSize="13" LineHeight="18"
+                                 LineStackingStrategy="BlockLineHeight" Foreground="{StaticResource DescBrush}"/>
+                    </Border>
+                    <Button x:Name="MoreLink" Style="{StaticResource LinkButton}" Content="More in Trello" Margin="0,4,0,0"
+                            Click="Open_Click" Visibility="Collapsed"/>
+                  </StackPanel>
+                </Border>
+                <Border BorderBrush="{StaticResource RuleBrush}" BorderThickness="0,1,0,0" Margin="0,8,0,0" Padding="0,4,0,0"
+                        Visibility="{Binding ShowChecklist, Converter={StaticResource BoolToVisibility}}">
+                  <StackPanel>
+                    <TextBlock Text="{Binding ChecklistStatus}" FontSize="13" Margin="0,4" TextWrapping="Wrap"
+                               Foreground="{StaticResource SubBrush}"
+                               Visibility="{Binding HasChecklistStatus, Converter={StaticResource BoolToVisibility}}"/>
+                    <ItemsControl ItemsSource="{Binding ChecklistRows}" Focusable="False">
+                      <ItemsControl.Resources>
+                        <DataTemplate DataType="{x:Type local:ChecklistHeading}">
+                          <Grid Margin="0,6,0,2">
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="*"/>
+                              <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                                       Foreground="{StaticResource SubBrush}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding CountText}" FontSize="12" Margin="8,0,0,0"
+                                       Foreground="{StaticResource SubBrush}"/>
+                          </Grid>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type local:CheckItemViewModel}">
+                          <CheckBox Style="{StaticResource CheckRow}" IsChecked="{Binding IsDone}" Click="CheckItem_Click"
+                                    AutomationProperties.Name="{Binding Name}">
+                            <TextBlock x:Name="ItemText" Text="{Binding Name}" TextWrapping="Wrap" FontSize="13" LineHeight="18"
+                                       LineStackingStrategy="BlockLineHeight" Foreground="{StaticResource DescBrush}"/>
+                          </CheckBox>
+                          <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsDone}" Value="True">
+                              <Setter TargetName="ItemText" Property="Foreground" Value="{StaticResource SubBrush}"/>
+                              <Setter TargetName="ItemText" Property="TextDecorations" Value="Strikethrough"/>
+                            </DataTrigger>
+                          </DataTemplate.Triggers>
+                        </DataTemplate>
+                      </ItemsControl.Resources>
+                    </ItemsControl>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
             </StackPanel>
             <Border x:Name="Tools" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Top"
                     Margin="0,-6,-8,0" Padding="2" CornerRadius="7" Background="{StaticResource CardBrush}" Visibility="Hidden">
@@ -113,6 +294,29 @@
         </DataTrigger>
         <DataTrigger Binding="{Binding IsHighlighted}" Value="True">
           <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+        </DataTrigger>
+        <DataTrigger Binding="{Binding ShowDescription}" Value="True">
+          <Setter TargetName="DescChip" Property="Foreground" Value="{StaticResource AccentBrush}"/>
+          <Setter TargetName="DescChip" Property="Background" Value="#2E808080"/>
+        </DataTrigger>
+        <DataTrigger Binding="{Binding ShowChecklist}" Value="True">
+          <Setter TargetName="ListChip" Property="Foreground" Value="{StaticResource AccentBrush}"/>
+          <Setter TargetName="ListChip" Property="Background" Value="#2E808080"/>
+        </DataTrigger>
+        <DataTrigger Binding="{Binding CheckComplete}" Value="True">
+          <Setter TargetName="ListChip" Property="Foreground" Value="{StaticResource OkBrush}"/>
+          <Setter TargetName="Progress" Property="Foreground" Value="{StaticResource OkBrush}"/>
+        </DataTrigger>
+        <DataTrigger Binding="{Binding DescriptionClipped}" Value="True">
+          <Setter TargetName="DescClip" Property="OpacityMask">
+            <Setter.Value>
+              <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="Black" Offset="0.72"/>
+                <GradientStop Color="Transparent" Offset="1"/>
+              </LinearGradientBrush>
+            </Setter.Value>
+          </Setter>
+          <Setter TargetName="MoreLink" Property="Visibility" Value="Visible"/>
         </DataTrigger>
       </DataTemplate.Triggers>
     </DataTemplate>

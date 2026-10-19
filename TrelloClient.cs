@@ -8,7 +8,11 @@ using System.Text.Json;
 namespace PrioritySidebar;
 
 public sealed record TrelloLabel(string Id, string? Name, string? Color);
-public sealed record TrelloCard(string Id, string Name, double Pos, string? ShortUrl, string? IdBoard, List<TrelloLabel>? Labels);
+public sealed record TrelloBadges(int CheckItems, int CheckItemsChecked);
+public sealed record TrelloCard(string Id, string Name, double Pos, string? ShortUrl, string? IdBoard, List<TrelloLabel>? Labels,
+    string? Desc = null, TrelloBadges? Badges = null);
+public sealed record TrelloCheckItem(string Id, string Name, string? State, double Pos);
+public sealed record TrelloChecklist(string Id, string Name, double Pos, List<TrelloCheckItem>? CheckItems);
 public sealed record TrelloNamed(string Id, string Name);
 public sealed record TrelloMember(string Id, string? FullName, string? Username);
 
@@ -45,8 +49,16 @@ public sealed class TrelloClient : IDisposable
     public Task<List<TrelloNamed>> GetLists(string boardId) =>
         Send<List<TrelloNamed>>(HttpMethod.Get, $"boards/{boardId}/lists?filter=open&fields=name");
 
+    // The badges carry each card's checklist counts, so the full checklists only load when a card is opened.
     public Task<List<TrelloCard>> GetCards(string listId) =>
-        Send<List<TrelloCard>>(HttpMethod.Get, $"lists/{listId}/cards?fields=name,pos,shortUrl,idBoard,labels");
+        Send<List<TrelloCard>>(HttpMethod.Get, $"lists/{listId}/cards?fields=name,pos,shortUrl,idBoard,labels,desc,badges");
+
+    public Task<List<TrelloChecklist>> GetChecklists(string cardId) =>
+        Send<List<TrelloChecklist>>(HttpMethod.Get,
+            $"cards/{cardId}/checklists?fields=name,pos&checkItems=all&checkItem_fields=name,state,pos");
+
+    public Task SetCheckItem(string cardId, string checkItemId, bool done) =>
+        Send(HttpMethod.Put, $"cards/{cardId}/checkItem/{checkItemId}?state={(done ? "complete" : "incomplete")}");
 
     /// <param name="pos">"top", "bottom" or a number from <see cref="Ranking"/>.</param>
     public Task<TrelloCard> MoveCard(string cardId, string pos) =>

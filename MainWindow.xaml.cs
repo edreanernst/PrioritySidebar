@@ -1,9 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -31,6 +33,9 @@ public partial class MainWindow : Window
     private Point _pressPoint;
     private bool _dragging;
     private int _dropIndex = -1;
+
+    // Only one card is open at a time, so the list stays easy to scan.
+    private CardViewModel? _openCard;
 
     public MainWindow()
     {
@@ -154,6 +159,8 @@ public partial class MainWindow : Window
         var oldRanks = _cards.ToDictionary(c => c.Id, c => c.Rank);
         var sameOrder = fresh.Select(c => c.Id).SequenceEqual(_cards.Select(c => c.Id));
         var byId = _cards.ToDictionary(c => c.Id);
+        var openList = _openCard is { ShowChecklist: true } ? _openCard : null;
+        var countsBefore = openList is null ? default : (openList.CheckDone, openList.CheckTotal);
 
         var updated = fresh.Select(card =>
             byId.TryGetValue(card.Id, out var existing) ? existing.Update(card) : CardViewModel.From(card)).ToList();
@@ -163,7 +170,13 @@ public partial class MainWindow : Window
             _cards.Clear();
             foreach (var card in updated) _cards.Add(card);
         }
+        if (_openCard is not null && !_cards.Contains(_openCard)) _openCard = null;
         UpdateStatus();
+
+        // The open checklist was changed somewhere else, for example on a phone.
+        if (openList is { ShowChecklist: true } && _cards.Contains(openList) &&
+            (openList.CheckDone, openList.CheckTotal) != countsBefore)
+            _ = LoadChecklistAsync(openList);
 
         if (highlightRisers && !sameOrder && oldRanks.Count > 0)
         {
@@ -394,6 +407,110 @@ public partial class MainWindow : Window
 
     private async void Add_Click(object sender, RoutedEventArgs e) => await AddAsync();
 
+    // ---------- Description and checklists ----------
+
+    private void Card_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        // A drag, or a press on one of the card's buttons, clears _pressedCard, so only a plain click gets here.
+        var card = CardOf(sender);
+        if (_pressedCard != card) return;
+        _pressedCard = null;
+        // Clicks in the open description or checklist leave the card open.
+        if (IsInside(e.OriginalSource as DependencyObject, el => el is FrameworkElement { Name: "Details" })) return;
+
+        if (card.IsExpanded) Collapse(card);
+        else if (card.HasDescription || card.HasChecklist) Expand(card, card.HasDescription, card.HasChecklist);
+    }
+
+    private void DescChip_Click(object sender, RoutedEventArgs e) => TogglePart(CardOf(sender), description: true);
+
+    private void ListChip_Click(object sender, RoutedEventArgs e) => TogglePart(CardOf(sender), description: false);
+
+    /// <summary>The icon buttons show or hide just the description or just the checklist.</summary>
+    private void TogglePart(CardViewModel card, bool description)
+    {
+        var showDescription = description ? !card.ShowDescription : card.ShowDescription;
+        var showChecklist = description ? card.ShowChecklist : !card.ShowChecklist;
+        if (showDescription || showChecklist) Expand(card, showDescription, showChecklist);
+        else Collapse(card);
+    }
+
+    private void Expand(CardViewModel card, bool description, bool checklist)
+    {
+        if (_openCard is { } other && other != card) Collapse(other);
+        _openCard = card;
+        var loadChecklist = checklist && !card.ShowChecklist;
+        card.ShowDescription = description;
+        card.ShowChecklist = checklist;
+        if (loadChecklist) _ = LoadChecklistAsync(card);
+    }
+
+    private void Collapse(CardViewModel card)
+    {
+        card.ShowDescription = false;
+        card.ShowChecklist = false;
+        if (_openCard == card) _openCard = null;
+    }
+
+    /// <summary>Loads the card's checklists fresh each time it opens; the list only carries the counts.</summary>
+    private async Task LoadChecklistAsync(CardViewModel card)
+    {
+        if (_client is not { } client)
+        {
+            if (card.ChecklistRows.Count == 0) card.ChecklistStatus = "Connect to Trello to see the checklist.";
+            return;
+        }
+        if (card.ChecklistRows.Count == 0) card.ChecklistStatus = "Loading the checklist...";
+        try
+        {
+            card.ShowChecklists(await client.GetChecklists(card.Id));
+        }
+        catch (Exception ex)
+        {
+            App.Log(ex);
+            if (card.ChecklistRows.Count == 0)
+                card.ChecklistStatus = ex is HttpRequestException or TaskCanceledException
+                    ? "The checklist can't load while you're offline."
+                    : "Couldn't load the checklist from Trello.";
+        }
+    }
+
+    private async void CheckItem_Click(object sender, RoutedEventArgs e)
+    {
+        // The box has already flipped IsDone through its binding.
+        var item = (CheckItemViewModel)((FrameworkElement)sender).DataContext;
+        var card = item.Card;
+        if (!CanEdit())
+        {
+            item.IsDone = !item.IsDone;
+            return;
+        }
+
+        card.RecountChecklist();
+        var done = item.IsDone;
+        if (!await SaveAsync(client => client.SetCheckItem(card.Id, item.Id, done)))
+            await LoadChecklistAsync(card);
+    }
+
+    /// <summary>Fades a description that is taller than its space and shows the "More in Trello" link.</summary>
+    private void DescClip_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        if (sender is not Border { Child: TextBlock text, DataContext: CardViewModel card } clip || clip.ActualWidth <= 0) return;
+        if (string.IsNullOrEmpty(text.Text))
+        {
+            card.DescriptionClipped = false;
+            return;
+        }
+        var full = new FormattedText(text.Text, CultureInfo.CurrentUICulture, text.FlowDirection,
+            new Typeface(text.FontFamily, text.FontStyle, text.FontWeight, text.FontStretch), text.FontSize, text.Foreground,
+            VisualTreeHelper.GetDpi(text).PixelsPerDip)
+        {
+            MaxTextWidth = clip.ActualWidth,
+            LineHeight = text.LineHeight,
+        };
+        card.DescriptionClipped = full.Height > clip.MaxHeight + 0.5;
+    }
+
     private async void AddBox_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key != Key.Enter) return;
@@ -405,8 +522,8 @@ public partial class MainWindow : Window
 
     private void Card_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        // Presses on the card's own buttons are clicks, not the start of a drag.
-        _pressedCard = IsInsideButton(e.OriginalSource as DependencyObject) ? null : CardOf(sender);
+        // Presses on the card's own buttons and checkboxes are clicks, not the start of a drag.
+        _pressedCard = IsInside(e.OriginalSource as DependencyObject, el => el is ButtonBase) ? null : CardOf(sender);
         _pressPoint = e.GetPosition(this);
     }
 
@@ -421,6 +538,8 @@ public partial class MainWindow : Window
         _pressedCard = null;
         if (!CanEdit()) return;
 
+        // A closed card keeps the drop line easy to follow.
+        if (_openCard is not null) Collapse(_openCard);
         _dragging = true;
         card.IsDragging = true;
         try
@@ -503,11 +622,11 @@ public partial class MainWindow : Window
         _dropIndex = -1;
     }
 
-    private static bool IsInsideButton(DependencyObject? element)
+    private static bool IsInside(DependencyObject? element, Func<DependencyObject, bool> match)
     {
         while (element is not null)
         {
-            if (element is Button) return true;
+            if (match(element)) return true;
             element = element is Visual or System.Windows.Media.Media3D.Visual3D
                 ? VisualTreeHelper.GetParent(element)
                 : LogicalTreeHelper.GetParent(element);

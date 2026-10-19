@@ -27,6 +27,9 @@ visible all the time, and reordering it takes one drag.
   find everything you finished in Trello's archive. Undo puts it back where it was.
 - **Quick add.** Type in the box at the bottom and press Enter.
 - **Labels shown.** Each card shows its Trello labels, so you can tell projects apart in one list.
+- **Card details at a click.** Click a card to open its description and checklist right in the sidebar.
+  Tick checklist items off as you go, and a bar on the card shows how far along it is. It turns green
+  when everything is ticked.
 - **Offline friendly.** Without a connection it shows the last list it loaded and pauses changes until
   Trello can be reached again.
 - **Stays out of the way.** It steps behind full-screen apps such as videos and presentations, and it
@@ -93,6 +96,9 @@ and set it to start when Windows starts.
 | Change a card's rank | Drag it up or down, or hover and use the arrows |
 | Mark a card done | Hover and press the tick, then **Undo** if you change your mind |
 | Open a card in Trello | Hover and press the open button |
+| See a card's description and checklist | Click the card. Click it again to close it |
+| See just the description or just the checklist | Press the lines icon or the checklist icon under the card's name |
+| Tick off a checklist item | Open the checklist and click the item |
 | Add a card | Type in the box at the bottom and press Enter |
 | Check Trello right now | Press the refresh arrow at the top |
 | Change settings | Press the settings button at the top |
@@ -121,6 +127,9 @@ reserved strip in place until the next time the sidebar starts.
   (`Ranking.PosBetween`), or `top` / `bottom` at either end.
 - **Sidebar:** `MainWindow` shows the list, handles drag and drop, and saves changes to Trello one at a
   time. If a save fails, the list is reloaded from Trello so it always shows the truth.
+- **Card details:** the list request includes each card's description and its checklist counts (Trello's
+  badges), so the regular check stays one request. The full checklist loads only when a card is opened,
+  and loads again if its counts change while it is open.
 - **Settings:** `SettingsWindow` and `Storage.cs` handle the connection, list choice, display, width,
   polling interval and starting with Windows.
 
