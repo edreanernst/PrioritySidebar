@@ -1,0 +1,17 @@
+# Priority Sidebar
+
+Personal WPF (.NET 10) app: a Windows app bar on the right edge of a display that shows one Trello list
+as a ranked, drag-to-reorder column. See README.md for behaviour and structure.
+
+## Checks
+
+- `dotnet build` must pass with 0 warnings. There are no automated tests yet.
+- Docking can only be checked by running the app: launch it, confirm the sidebar sits at the right edge
+  and maximized windows stop beside it, then close it from the header's right-click menu and confirm the
+  full screen width comes back.
+
+## Notes
+
+- Close the app normally when testing. A forced stop leaves the strip reserved until the next launch
+  clears it.
+- UI copy is plain English and avoids em/en dashes.

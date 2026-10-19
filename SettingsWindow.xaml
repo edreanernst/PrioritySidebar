@@ -1,0 +1,116 @@
+<Window x:Class="PrioritySidebar.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Priority Sidebar settings"
+        Width="520" SizeToContent="Height" ResizeMode="NoResize" WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="True" FontFamily="Segoe UI Variable Text, Segoe UI" FontSize="14"
+        UseLayoutRounding="True">
+  <Window.Resources>
+    <Style x:Key="Heading" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="15"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Margin" Value="0,22,0,0"/>
+    </Style>
+    <Style x:Key="FieldLabel" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#4A4D52"/>
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="Margin" Value="0,10,0,4"/>
+    </Style>
+    <Style TargetType="TextBox">
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Padding" Value="4,0"/>
+    </Style>
+    <Style TargetType="PasswordBox">
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+      <Setter Property="Padding" Value="4,0"/>
+    </Style>
+    <Style TargetType="ComboBox">
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="VerticalContentAlignment" Value="Center"/>
+    </Style>
+    <Style TargetType="Button">
+      <Setter Property="Height" Value="32"/>
+      <Setter Property="Padding" Value="14,0"/>
+    </Style>
+  </Window.Resources>
+
+  <StackPanel Margin="24,4,24,20">
+    <TextBlock Text="Trello connection" Style="{StaticResource Heading}"/>
+
+    <TextBlock Text="API key" Style="{StaticResource FieldLabel}"/>
+    <TextBox x:Name="KeyBox" AutomationProperties.Name="API key"/>
+    <TextBlock Margin="0,4,0,0" FontSize="12" Foreground="#4A4D52" TextWrapping="Wrap">
+      You create this once in Trello.
+      <Hyperlink NavigateUri="https://trello.com/power-ups/admin" RequestNavigate="Link_RequestNavigate">Show me where</Hyperlink>
+    </TextBlock>
+
+    <TextBlock Text="Token" Style="{StaticResource FieldLabel}"/>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <PasswordBox x:Name="TokenBox" AutomationProperties.Name="Token"/>
+      <Button Grid.Column="1" Margin="8,0,0,0" Content="Get a token" Click="GetToken_Click"/>
+    </Grid>
+
+    <Grid Margin="0,12,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <Button Content="Connect" Click="Connect_Click"/>
+      <TextBlock x:Name="ConnectStatus" Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center"
+                 TextWrapping="Wrap" FontSize="13"/>
+    </Grid>
+
+    <TextBlock Text="Which list to show" Style="{StaticResource Heading}"/>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="12"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+      <StackPanel>
+        <TextBlock Text="Board" Style="{StaticResource FieldLabel}"/>
+        <ComboBox x:Name="BoardCombo" DisplayMemberPath="Name" SelectionChanged="BoardCombo_SelectionChanged"
+                  AutomationProperties.Name="Board"/>
+      </StackPanel>
+      <StackPanel Grid.Column="2">
+        <TextBlock Text="List" Style="{StaticResource FieldLabel}"/>
+        <ComboBox x:Name="ListCombo" DisplayMemberPath="Name" AutomationProperties.Name="List"/>
+      </StackPanel>
+    </Grid>
+
+    <TextBlock Text="Sidebar" Style="{StaticResource Heading}"/>
+    <TextBlock Text="Show on" Style="{StaticResource FieldLabel}"/>
+    <ComboBox x:Name="DisplayCombo" DisplayMemberPath="Name" AutomationProperties.Name="Show on"/>
+
+    <Grid Margin="0,10,0,4">
+      <TextBlock Text="Width" Foreground="#4A4D52" FontSize="13"/>
+      <TextBlock x:Name="WidthText" HorizontalAlignment="Right" Foreground="#4A4D52" FontSize="13"/>
+    </Grid>
+    <Slider x:Name="WidthSlider" Minimum="260" Maximum="420" TickFrequency="10" IsSnapToTickEnabled="True"
+            ValueChanged="WidthSlider_ValueChanged" AutomationProperties.Name="Width"/>
+
+    <TextBlock Text="Check Trello for changes every" Style="{StaticResource FieldLabel}"/>
+    <ComboBox x:Name="PollCombo" DisplayMemberPath="Name" AutomationProperties.Name="Check Trello for changes every"/>
+
+    <CheckBox x:Name="StartupCheck" Content="Start when Windows starts" Margin="0,16,0,0"/>
+
+    <Grid Margin="0,26,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock VerticalAlignment="Center" FontSize="13">
+        <Hyperlink Click="CloseSidebar_Click">Close the sidebar</Hyperlink>
+      </TextBlock>
+      <Button Grid.Column="1" Content="Cancel" IsCancel="True" MinWidth="88"/>
+      <Button Grid.Column="2" Content="Save" IsDefault="True" Margin="8,0,0,0" MinWidth="88" Click="Save_Click"/>
+    </Grid>
+  </StackPanel>
+</Window>
