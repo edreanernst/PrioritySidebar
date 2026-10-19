@@ -172,7 +172,7 @@
     <DataTemplate x:Key="CardTemplate" DataType="{x:Type local:CardViewModel}">
       <Grid Margin="0,3">
         <Border x:Name="Card" Background="{StaticResource CardBrush}" BorderBrush="{StaticResource CardBorderBrush}"
-                BorderThickness="1.5" CornerRadius="8" Padding="6,10,12,10" Cursor="SizeNS"
+                BorderThickness="1.5" CornerRadius="8" Padding="6,10,12,10" Cursor="Hand"
                 PreviewMouseLeftButtonDown="Card_PreviewMouseLeftButtonDown" PreviewMouseMove="Card_PreviewMouseMove"
                 MouseLeftButtonUp="Card_MouseLeftButtonUp">
           <Grid>
